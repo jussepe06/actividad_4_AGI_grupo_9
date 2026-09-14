@@ -990,6 +990,9 @@ function ensureAudio(){
   if(!audioCtx){
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
+  if(audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
 }
 function beep(freq, dur, type, vol, delay){
   type = type || 'square'; vol = vol===undefined?0.08:vol; delay = delay||0;
