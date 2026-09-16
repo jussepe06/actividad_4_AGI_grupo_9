@@ -653,14 +653,14 @@ function generateCandidates(hand){
   return unique;
 }
 
-function maxValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats){
+function maxValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats, oppFinished){
   stats.nodes += 1;
   const candidates = generateCandidates(playerHand);
   let bestVal = -Infinity;
   let bestAction = candidates[0] || [];
   for(const action of candidates){
     const {newHand, newDeck} = applyDiscardPure(playerHand, action, deck);
-    const val = minValue(newHand, oppHand, newDeck, alpha, beta, useAlphaBeta, stats);
+    const val = minValue(newHand, oppHand, newDeck, alpha, beta, useAlphaBeta, stats, oppFinished);
     if(val > bestVal){ bestVal = val; bestAction = action; }
     if(useAlphaBeta){
       if(bestVal >= beta) return {value:bestVal, action:bestAction}; // poda beta
@@ -670,11 +670,14 @@ function maxValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats){
   return {value:bestVal, action:bestAction};
 }
 
-function minValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats){
+function minValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats, oppFinished){
   stats.nodes += 1;
+  const playerVal = bestCombo(playerHand).damage;
+  if(oppFinished) {
+    return playerVal - bestCombo(oppHand).damage;
+  }
   const candidates = generateCandidates(oppHand);
   let worst = Infinity;
-  const playerVal = bestCombo(playerHand).damage;
   for(const action of candidates){
     const {newHand:newOppHand} = applyDiscardPure(oppHand, action, deck);
     stats.nodes += 1; // nodo hoja
@@ -690,10 +693,10 @@ function minValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats){
 
 // useAlphaBeta=false -> Minimax puro (explora todo el árbol).
 // useAlphaBeta=true  -> Poda Alfa-Beta (misma decisión final, menos nodos).
-function searchDecision(playerHand, oppHand, deck, useAlphaBeta){
+function searchDecision(playerHand, oppHand, deck, useAlphaBeta, oppFinished = false){
   const stats = {nodes:0};
   const t0 = performance.now();
-  const result = maxValue(playerHand, oppHand, deck, -Infinity, Infinity, useAlphaBeta, stats);
+  const result = maxValue(playerHand, oppHand, deck, -Infinity, Infinity, useAlphaBeta, stats, oppFinished);
   const t1 = performance.now();
   return {action: result.action, value: result.value, nodes: stats.nodes, timeMs: (t1-t0)};
 }
@@ -793,11 +796,11 @@ function decisionAStar(hand, deck){
 // Punto único de despacho: decide qué función usar según el modo del
 // jugador. Minimax y Alfa-Beta siguen pasando exactamente por la misma
 // searchDecision() de siempre, sin ningún cambio en su lógica.
-function decideDiscard(hand, oppHand, deck, mode){
+function decideDiscard(hand, oppHand, deck, mode, oppFinished=false){
   if(mode === 'bfs') return decisionBFS(hand, deck);
   if(mode === 'dfs') return decisionDFS(hand, deck);
   if(mode === 'astar') return decisionAStar(hand, deck);
-  return searchDecision(hand, oppHand, deck, mode === 'alphabeta');
+  return searchDecision(hand, oppHand, deck, mode === 'alphabeta', oppFinished);
 }
 
 /* ======================================================================
@@ -826,9 +829,10 @@ function runAutoDecisionForPlayer(playerNum){
   const oppHand = playerNum===1 ? state.hand2 : state.hand1;
   let totalNodes = 0, totalTime = 0;
   const log = [];
+  const oppFinished = (playerNum === 2);
 
   for(let d=0; d<3; d++){
-    const decision = decideDiscard(hand, oppHand, state.deck, mode);
+    const decision = decideDiscard(hand, oppHand, state.deck, mode, oppFinished);
     totalNodes += decision.nodes;
     totalTime += decision.timeMs;
     hand = applyDiscardReal(state, hand, decision.action);
@@ -1145,6 +1149,21 @@ async function runTorneoBusqueda(){
       '<td>'+(s.nodos/s.partidas).toFixed(1)+'</td><td>'+(s.tiempo/s.partidas).toFixed(2)+' ms</td></tr>';
   });
 
+  const maxNodes = Math.max(...algos.map(a => acumulado[a].nodos/acumulado[a].partidas));
+  const maxTime = Math.max(...algos.map(a => acumulado[a].tiempo/acumulado[a].partidas));
+  let chartNodes = '';
+  let chartTime = '';
+  const colors = {bfs:'#3ddc84', dfs:'#E5003A', astar:'#00E5FF'};
+
+  algos.forEach(a => {
+    const avgN = (acumulado[a].nodos/acumulado[a].partidas);
+    const avgT = (acumulado[a].tiempo/acumulado[a].partidas);
+    const pctN = Math.max(1, (avgN / maxNodes) * 100);
+    const pctT = Math.max(1, (avgT / maxTime) * 100);
+    chartNodes += '<div style="margin-bottom:8px;"><div style="font-size:12px; margin-bottom:2px;">'+algoLabel(a)+' ('+avgN.toFixed(1)+')</div><div style="background:'+colors[a]+'; width:'+pctN+'%; height:12px; border-radius:4px;"></div></div>';
+    chartTime += '<div style="margin-bottom:8px;"><div style="font-size:12px; margin-bottom:2px;">'+algoLabel(a)+' ('+avgT.toFixed(2)+' ms)</div><div style="background:'+colors[a]+'; width:'+pctT+'%; height:12px; border-radius:4px;"></div></div>';
+  });
+
   const html =
     '<div class="panel">'+
     '<h2>TORNEO DE B&Uacute;SQUEDA: BFS vs DFS vs A* (20 partidas por enfrentamiento)</h2>'+
@@ -1159,6 +1178,10 @@ async function runTorneoBusqueda(){
     '</tbody></table>'+
     '<div class="hint" style="margin-top:10px">Cada algoritmo juega 40 partidas en total (20 contra cada uno de los otros dos). '+
     'Fíjate en cómo BFS y A* suelen ganarle a DFS con m&aacute;s frecuencia (exploran m&aacute;s a fondo antes de decidir), mientras que A* logra un rendimiento similar a BFS visitando bastantes menos nodos.</div>'+
+    '</div>'+
+    '<div class="panel" style="margin-top:15px; display:flex; gap:20px;">'+
+    '  <div style="flex:1;"><h3>Comparativa de Nodos Evaluados</h3>' + chartNodes + '</div>'+
+    '  <div style="flex:1;"><h3>Comparativa de Tiempo Promedio</h3>' + chartTime + '</div>'+
     '</div>';
 
   resultsBox.innerHTML = html;
@@ -1616,7 +1639,8 @@ document.getElementById('btnStart').addEventListener('click', ()=>{
 function giveHint(playerNum){
   const hand = playerNum===1 ? state.hand1 : state.hand2;
   const oppHand = playerNum===1 ? state.hand2 : state.hand1;
-  const decision = searchDecision(hand, oppHand, state.deck, true); // Usa Alfa-Beta
+  const oppFinished = (playerNum === 2);
+  const decision = searchDecision(hand, oppHand, state.deck, true, oppFinished); // Usa Alfa-Beta
   const selected = playerNum===1 ? state.selected1 : state.selected2;
   selected.clear();
   decision.action.forEach(i => selected.add(i));
