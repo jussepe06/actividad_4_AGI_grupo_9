@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA MANO DEL FIN — DUELO</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-grad-1: #0d1b2a;
+    --bg-grad-2: #040914;
+    --bg: #040914;
+    --panel: #0a1128;
+    --accent: #E5003A;
+    --accent2: #0077B6;
+    --ash: #8ea8c3;
+    --text: #e0e6ed;
+    --good: #3ddc84;
+    --bad: #e0304a;
+    --p1: #FF4D5E;
+    --p2: #00E5FF;
+  }
+  body.theme-hell {
+    --bg-grad-1: #2a0808;
+    --bg-grad-2: #0a0202;
+    --bg: #0a0202;
+    --panel: #1a0505;
+    --accent: #ff4d4d;
+    --accent2: #ff9900;
+    --ash: #e6b3b3;
+    --text: #ffcccc;
+    --p1: #ff0000;
+    --p2: #ffcc00;
+  }
+  body.theme-classic {
+    --bg-grad-1: #1a0a14;
+    --bg-grad-2: #050206;
+    --bg: #050206;
+    --panel: #0d070f;
+    --accent: #8b0018;
+    --accent2: #5a1a8c;
+    --ash: #8a8a92;
+    --text: #d8c9d0;
+    --p1: #ff4d5e;
+    --p2: #b06bff;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:radial-gradient(circle at 50% 0%, var(--bg-grad-1) 0%, var(--bg-grad-2) 80%);
+    background-color: var(--bg-grad-2);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size: 15px;
+    min-height:100vh;
+  }
+  #app{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    max-width:1240px;
+    margin:0 auto;
+    padding:24px;
+  }
+  h1{
+    width:100%;
+    text-align:center;
+    letter-spacing:6px;
+    color:var(--accent);
+    text-shadow:0 0 12px var(--accent), 0 0 3px #fff;
+    font-size:32px;
+    margin:10px 0 20px 0;
+    font-family: 'Cinzel', serif;
+  }
+  .col-left{flex:0 0 680px;}
+  .col-right{flex:1 1 340px; min-width:320px;}
+  canvas{
+    display:block;
+    background:#020612;
+    border:2px solid var(--accent2);
+    box-shadow:0 0 20px rgba(0,119,182,0.4) inset, 0 0 15px rgba(0,229,255,0.3);
+    width:640px;height:480px;
+    max-width:100%;
+    border-radius:6px;
+  }
+  .toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:14px 0;
+    align-items:center;
+  }
+  select,button{
+    background:#0a1128;
+    color:var(--text);
+    border:1px solid var(--accent2);
+    padding:8px 14px;
+    font-family:inherit;
+    font-size:14px;
+    cursor:pointer;
+    border-radius:4px;
+    transition: all 0.2s;
+  }
+  button:hover:not(:disabled){background:var(--accent2); color:#fff; box-shadow:0 0 8px var(--accent2);}
+  button:disabled{opacity:0.4; cursor:not-allowed;}
+  select:disabled{opacity:0.5;}
+  .modes-row{display:flex; gap:20px; flex-wrap:wrap; margin:10px 0;}
+  .mode-block{display:flex; align-items:center; gap:8px;}
+  .mode-block .tag{font-size:13px; font-weight:600; letter-spacing:1px;}
+  .mode-block.p1 .tag{color:var(--p1);}
+  .mode-block.p2 .tag{color:var(--p2);}
+  .hand-area{
+    background:var(--panel);
+    border:1px solid #1b2a47;
+    padding:14px;
+    margin-top:14px;
+    border-radius: 6px;
+    transition:opacity .2s, box-shadow .2s;
+  }
+  .hand-area.inactive{opacity:0.5;}
+  .hand-area.active.p1{box-shadow:0 0 12px rgba(255,77,94,0.4); border-color:var(--p1);}
+  .hand-area.active.p2{box-shadow:0 0 12px rgba(0,229,255,0.4); border-color:var(--p2);}
+  .hand-area h3{margin:0 0 12px 0; font-size:15px; color:var(--ash); letter-spacing:2px; font-family:'Cinzel', serif;}
+  .hand-area.p1 h3{color:var(--p1);}
+  .hand-area.p2 h3{color:var(--p2);}
+  .cards-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .card{
+    width:66px; height:94px;
+    border:1px solid #3a506b;
+    border-radius:6px;
+    background:linear-gradient(160deg,#1c2541,#0b132b);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:12px; text-align:center; padding:4px;
+    cursor:pointer; user-select:none;
+    transition:transform .15s, box-shadow .15s;
+    font-weight: 600;
+  }
+  .card.locked{cursor:default;}
+  .card.selected{border-color:var(--accent); box-shadow:0 0 12px var(--accent); transform:translateY(-8px);}
+  .card .rank{font-size:18px; font-weight:bold; margin-bottom:4px;}
+  .card.abismo{color:#b06bff;}
+  .card.ruina{color:#e08a3d;}
+  .card.sangre{color:#ff4d5e;}
+  .card.ceniza{color:#b8b8c0;}
+  .panel{
+    background:var(--panel);
+    border:1px solid #1b2a47;
+    padding:16px 18px;
+    margin-bottom:16px;
+    border-radius: 6px;
+  }
+  .panel h2{
+    font-size:16px; letter-spacing:2px; color:var(--accent2);
+    margin:0 0 12px 0; border-bottom:1px solid #1b2a47; padding-bottom:8px;
+    font-family: 'Cinzel', serif;
+  }
+  .stat-row{display:flex; justify-content:space-between; font-size:14px; margin:8px 0; gap:8px;}
+  .stat-row .k{color:var(--ash);}
+  .stat-row .v{text-align:right; font-weight:600;}
+  #decisionText{font-size:14px; line-height:1.6; color:var(--text); white-space:pre-wrap;}
+  #turnIndicator{font-size:15px; font-weight:bold; margin-bottom:10px; letter-spacing:1px; color: #fff;}
+  table{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
+  th,td{border:1px solid #1b2a47; padding:6px 8px; text-align:center;}
+  th{background:#0d1b2a; color:var(--accent2);}
+  tr.win1{color:var(--p1);}
+  tr.win2{color:var(--p2);}
+  tr.tie{color:var(--ash);}
+  #batchNote{font-size:13px; color:var(--ash); margin-top:8px;}
+  .hint{font-size:13px; color:var(--ash); margin-top:10px; line-height:1.6;}
+  .hint b { color: #e0e6ed; }
+  .small{font-size:12px; color:var(--ash);}
+</style>
+</head>
+<body>
+<button id="themeToggleBtn" style="position:fixed; top:20px; right:20px; z-index:1000; font-family:'Cinzel', serif; font-weight:bold; letter-spacing:1px; background:var(--panel); color:var(--text); border:1px solid var(--accent2); padding:10px 16px; border-radius:6px; cursor:pointer; box-shadow:0 0 10px rgba(0,0,0,0.5); transition: all 0.2s;">CAMBIAR TEMA</button>
+<div id="app">
+  <h1>&#9760; LA MANO DEL FIN &#9760; MODO DUELO (PvP)</h1>
+
+  <div class="col-left">
+    <canvas id="gameCanvas" width="640" height="480"></canvas>
+
+    <div class="modes-row">
+      <div class="mode-block p1">
+        <span class="tag">MODO J1:</span>
+        <select id="modeSelect1">
+          <option value="manual">Manual</option>
+          <option value="minimax">MINIMAX</option>
+          <option value="alphabeta">PODA ALFA-BETA</option>
+          <option value="bfs">BFS (Amplitud)</option>
+          <option value="dfs">DFS (Profundidad)</option>
+          <option value="astar">A* (Informada)</option>
+        </select>
+      </div>
+      <div class="mode-block p2">
+        <span class="tag">MODO J2:</span>
+        <select id="modeSelect2">
+          <option value="manual">Manual</option>
+          <option value="minimax">MINIMAX</option>
+          <option value="alphabeta">PODA ALFA-BETA</option>
+          <option value="bfs">BFS (Amplitud)</option>
+          <option value="dfs">DFS (Profundidad)</option>
+          <option value="astar">A* (Informada)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnStart">Iniciar / Reiniciar</button>
+      <button id="btnStep" disabled>Jugar Ronda (ambos algoritmos)</button>
+      <button id="btnAuto" disabled>Auto: OFF</button>
+      <button id="btnPause" disabled>Pausa</button>
+      <button id="btnBatch">Ejecutar 20 partidas</button>
+      <button id="btnTorneoBusqueda">🔍 Torneo BFS vs DFS vs A* (20 c/u)</button>
+    </div>
+
+    <div class="hand-area p1" id="handArea1">
+      <h3>MANO JUGADOR 1</h3>
+      <div class="cards-row" id="handRow1"></div>
+      <div class="toolbar">
+        <button id="btnHint1" disabled style="color:var(--accent2); border-color:var(--accent2);">&#128302; Consejo del Demonio</button>
+        <button id="btnDiscard1" disabled>Descartar seleccionadas</button>
+        <button id="btnAttack1" disabled>Atacar con las cartas seleccionadas</button>
+        <span class="small" id="discardCounter1">Descartes usados: 0/3</span>
+        <span class="small" id="attackCounter1">Cartas seleccionadas para atacar: 0 (elige de 1 a 5)</span>
+      </div>
+    </div>
+
+    <div class="hand-area p2" id="handArea2">
+      <h3>MANO JUGADOR 2</h3>
+      <div class="cards-row" id="handRow2"></div>
+      <div class="toolbar">
+        <button id="btnHint2" disabled style="color:var(--accent2); border-color:var(--accent2);">&#128302; Consejo del Demonio</button>
+        <button id="btnDiscard2" disabled>Descartar seleccionadas</button>
+        <button id="btnAttack2" disabled>Atacar con las cartas seleccionadas</button>
+        <span class="small" id="discardCounter2">Descartes usados: 0/3</span>
+        <span class="small" id="attackCounter2">Cartas seleccionadas para atacar: 0 (elige de 1 a 5)</span>
+      </div>
+    </div>
+
+    <div id="batchResults"></div>
+    <div id="torneoBusquedaResults"></div>
+  </div>
+
+  <div class="col-right">
+    <div class="panel">
+      <h2>DECISI&Oacute;N Y MOTIVO</h2>
+      <div id="turnIndicator">A la espera de iniciar la partida...</div>
+      <div id="decisionText">-</div>
+    </div>
+    <div class="panel">
+      <h2>M&Eacute;TRICAS — JUGADOR 1</h2>
+      <div class="stat-row"><span class="k">Nodos (&uacute;ltima decisi&oacute;n)</span><span class="v" id="statNodesLast1">-</span></div>
+      <div class="stat-row"><span class="k">Nodos (acumulado ronda)</span><span class="v" id="statNodesRound1">-</span></div>
+      <div class="stat-row"><span class="k">Tiempo (&uacute;ltimo)</span><span class="v" id="statTimeLast1">-</span></div>
+      <div class="stat-row"><span class="k">Tiempo (acumulado ronda)</span><span class="v" id="statTimeRound1">-</span></div>
+    </div>
+    <div class="panel">
+      <h2>M&Eacute;TRICAS — JUGADOR 2</h2>
+      <div class="stat-row"><span class="k">Nodos (&uacute;ltima decisi&oacute;n)</span><span class="v" id="statNodesLast2">-</span></div>
+      <div class="stat-row"><span class="k">Nodos (acumulado ronda)</span><span class="v" id="statNodesRound2">-</span></div>
+      <div class="stat-row"><span class="k">Tiempo (&uacute;ltimo)</span><span class="v" id="statTimeLast2">-</span></div>
+      <div class="stat-row"><span class="k">Tiempo (acumulado ronda)</span><span class="v" id="statTimeRound2">-</span></div>
+    </div>
+    <div class="panel">
+      <h2>RESULTADO DE LA PARTIDA</h2>
+      <div class="stat-row"><span class="k">&iquest;Empate?</span><span class="v" id="statTie">-</span></div>
+      <div class="stat-row"><span class="k">Ganador</span><span class="v" id="statWinner">-</span></div>
+      <div class="stat-row"><span class="k">Rondas jugadas</span><span class="v" id="statRounds">-</span></div>
+    </div>
+    <div class="hint">
+      <b>REGLAS DEL JUEGO:</b><br>
+      Los cuatro palos son ABISMO, RUINA, SANGRE y CENIZA. Cada palo tiene las cartas de poder 2 a 10 (36 cartas en total, sin figuras). Con 1 a 5 cartas de tu mano se forma siempre la <b>mejor combinaci&oacute;n posible</b> de ataque; las cartas nunca se llaman "Dualidad" o "Presagio" — esos son los <b>nombres de las combinaciones</b>, no de las cartas base:<br><br>
+      <b>Presagio (10)</b>: una sola carta de alto poder (6, 7, 8, 9 o 10).<br>
+      <b>Dualidad (20)</b>: dos cartas de igual poder.<br>
+      <b>Convergencia (40)</b>: dos pares de Dualidades.<br>
+      <b>Trinidad del Abismo (80)</b>: tres cartas de igual poder.<br>
+      <b>Procesi&oacute;n del Fin (100)</b>: cinco cartas en escala consecutiva de poder.<br>
+      <b>Legi&oacute;n de Ceniza (120)</b>: cinco cartas del mismo palo.<br>
+      <b>Ej&eacute;rcito del Apocalipsis (175)</b>: tres cartas del mismo poder y dos cartas del mismo poder.<br>
+      <b>Cuatro Jinetes (400)</b>: las cuatro cartas del mismo poder.<br>
+      <b>Marcha de la Ruina (600)</b>: cinco cartas en escala consecutiva y del mismo palo.<br>
+      <b>La Mano del Fin (2000)</b>: cinco cartas del m&aacute;s alto poder (6-7-8-9-10) del mismo palo.<br><br>
+      Este es el modo <b>Jugador vs Jugador</b>: ambas manos son visibles y se juega por turnos. El ataque nunca se calcula sobre toda la mano: siempre se elige un grupo de <b>1 a 5 cartas exactas</b>.<br><br>
+      <b>MODO MANUAL:</b> T&uacute; decides tus hasta 3 descartes y luego eliges libremente de 1 a 5 cartas para atacar.<br><br>
+      <b>ALGORITMOS APLICADOS EN EL JUEGO:</b><br>
+      Los algoritmos toman el control <b>durante la fase de descarte</b>. Analizan tu mano y la del oponente para decidir qu&eacute; cartas descartar con el fin de maximizar el da&ntilde;o que har&aacute;n y minimizar el que recibir&aacute;n.<br><br>
+      <b>1. Minimax:</b><br>
+      Explora exhaustivamente <b>todas</b> las combinaciones posibles de descartes y robos de cartas futuros en un &aacute;rbol de decisiones, asumiendo que ambos jugadores juegan a la perfecci&oacute;n. Encuentra la jugada que garantiza el mayor beneficio en el peor de los casos.<br><br>
+      <b>2. Poda Alfa-Beta:</b><br>
+      Es una optimizaci&oacute;n de Minimax. Hace <b>exactamente lo mismo</b> pero con un truco: descarta (poda) las "ramas" del &aacute;rbol de decisiones que ya sabe que son peores que una opci&oacute;n previamente encontrada. No pierde el tiempo calculando futuros que nunca va a elegir.<br><br>
+      <b>&iquest;CU&Aacute;L ES MEJOR Y POR QU&Eacute;?</b><br>
+      La <b>Poda Alfa-Beta es siempre mejor</b> en este juego. Ambos algoritmos siempre eligen exactamente la misma jugada y el mismo descarte, pero Alfa-Beta lo hace visitando muchos menos nodos (como ver&aacute;s en las m&eacute;tricas de la derecha) y, por lo tanto, es <b>mucho m&aacute;s r&aacute;pido</b>. Minimax es &uacute;til de forma did&aacute;ctica para entender c&oacute;mo se genera el &aacute;rbol completo, pero en situaciones donde hay muchas opciones de descarte, Minimax podr&iacute;a hacer que el navegador se congele por exceso de c&aacute;lculos, mientras que Alfa-Beta responder&aacute; instant&aacute;neamente.<br><br>
+      <b>3. BFS, DFS y A* (b&uacute;squeda NO adversarial):</b><br>
+      A diferencia de Minimax y Alfa-Beta —que asumen que el rival tambi&eacute;n juega perfecto y buscan la jugada que garantiza el mejor resultado en el <b>peor caso</b>— estos tres algoritmos exploran &uacute;nicamente el &aacute;rbol de tus propias jugadas de descarte posibles (generado por la misma funci&oacute;n de candidatos que usan Minimax/Alfa-Beta) para encontrar la que maximiza tu propio da&ntilde;o, sin modelar al oponente en absoluto:<br><br>
+      &bull; <b>BFS</b> punt&uacute;a <b>todos</b> los descartes candidatos, uno por uno, y se queda con el que da m&aacute;s da&ntilde;o. Nunca se le escapa la mejor opci&oacute;n disponible, pero siempre visita todos los nodos.<br>
+      &bull; <b>DFS</b> se compromete con el <b>primer</b> descarte candidato que mejora tu mano actual y se detiene ah&iacute; mismo, sin revisar el resto. Es el m&aacute;s r&aacute;pido de los tres (visita pocos nodos), pero —igual que en un &aacute;rbol de b&uacute;squeda cualquiera— <b>no garantiza</b> encontrar el mejor descarte posible.<br>
+      &bull; <b>A*</b> usa una heur&iacute;stica barata (agrupar las cartas por poder) para <b>ordenar</b> los candidatos de m&aacute;s a menos prometedor antes de evaluarlos de verdad, y se detiene en cuanto ninguno de los candidatos restantes puede, seg&uacute;n esa heur&iacute;stica, superar lo ya encontrado. Normalmente llega al mismo resultado que BFS visitando menos nodos, gracias a explorar primero por donde conviene.<br><br>
+      &Uacute;nica tecla activa: <b>ESC</b> para pausar o reanudar la partida.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================================================================
+   ===================  LOGICA DEL JUEGO (REGLAS)  =====================
+   ======================================================================
+   Mazo, evaluación de manos, combinaciones de ataque y utilidades
+   generales. Idéntico en espíritu al modo original de un jugador,
+   pero ahora completamente simétrico: no existe una "IA" fija, sino
+   dos jugadores (J1 y J2) que pueden ser Manual, Minimax o Poda
+   Alfa-Beta de forma independiente.
+*/
+
+const SUITS = ['ABISMO','RUINA','SANGRE','CENIZA'];
+const SUIT_CLASS = {ABISMO:'abismo', RUINA:'ruina', SANGRE:'sangre', CENIZA:'ceniza'};
+// Cada palo tiene únicamente cartas de poder 2 a 10 (sin figuras): 9 rangos x 4 palos = 36 cartas.
+const RANK_LABEL = {2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10'};
+
+const MAX_HP = 2000;
+const ROUND_CAP = 260; // salvaguarda para evitar partidas infinitas
+
+function createFullDeck(){
+  const deck = [];
+  for(const suit of SUITS){
+    for(let rank=2; rank<=10; rank++){
+      deck.push({suit, rank, id: suit+'-'+rank});
+    }
+  }
+  return deck;
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function ensureDeck(deck, minNeeded){
+  if(deck.length < minNeeded){
+    const fresh = shuffle(createFullDeck());
+    deck.length = 0;
+    deck.push(...fresh);
+  }
+}
+
+function kCombinations(arr, k){
+  const results = [];
+  const combo = [];
+  function backtrack(start){
+    if(combo.length === k){ results.push(combo.slice()); return; }
+    for(let i=start;i<arr.length;i++){
+      combo.push(arr[i]);
+      backtrack(i+1);
+      combo.pop();
+    }
+  }
+  backtrack(0);
+  return results;
+}
+
+// Cartas de "alto poder" según la regla del juego: 6, 7, 8, 9 y 10.
+// (2, 3, 4 y 5 son de bajo poder y NO cuentan para Presagio ni para La Mano del Fin).
+const HIGH_POWER_MIN = 6;
+
+// Patrones "estructurales" que SOLO existen cuando se usan las 5 cartas juntas
+// como una única unidad (escala, palo repetido, o full: trío+par). El resto de
+// combinaciones (Presagio, Dualidad, Trinidad, Cuatro Jinetes) se reconocen
+// agrupando por poder en evaluateSelection() de más abajo, y pueden aparecer
+// VARIAS VECES dentro de una misma selección de 1 a 5 cartas.
+function fiveCardStructuralPattern(cards){
+  const ranks = cards.map(c=>c.rank);
+  const suits = cards.map(c=>c.suit);
+  const rankCounts = {};
+  ranks.forEach(r=> rankCounts[r] = (rankCounts[r]||0)+1);
+  const counts = Object.values(rankCounts).sort((a,b)=>b-a);
+  const isFlush = suits.every(s => s === suits[0]);
+  const uniqueRanks = [...new Set(ranks)].sort((a,b)=>a-b);
+  // Escala consecutiva de poder: 5 valores distintos y consecutivos (p.ej. 2-3-4-5-6, no solo 6-10).
+  const isStraight = uniqueRanks.length === 5 && (uniqueRanks[4]-uniqueRanks[0] === 4);
+  // "Las cinco cartas de más alto poder": únicamente 6-7-8-9-10, sin excepción.
+  const isAllHighRun = isStraight && uniqueRanks[0] === HIGH_POWER_MIN;
+
+  if(isStraight && isFlush && isAllHighRun)  return {name:'La Mano del Fin', damage:2000};
+  if(isStraight && isFlush)                  return {name:'Marcha de la Ruina', damage:600};
+  if(counts[0] === 3 && counts[1] === 2)     return {name:'Ej&eacute;rcito del Apocalipsis', damage:175};
+  if(isFlush)                                return {name:'Legi&oacute;n de Ceniza', damage:120};
+  if(isStraight)                             return {name:'Procesi&oacute;n del Fin', damage:100};
+  return null; // ninguna estructura de 5 cartas encaja; se usa la suma por grupos de poder.
+}
+
+// Evalúa un grupo de CUALQUIER tamaño (1 a 5 cartas), que es exactamente lo que
+// un jugador (o un algoritmo) decide usar para atacar. En vez de exigir que las
+// cartas elegidas formen UNA sola combinación predefinida para ese tamaño de
+// grupo, agrupa las cartas por poder (rank): cada grupo de N cartas del mismo
+// poder vale su propia combinación (1=Presagio si es alto poder, 2=Dualidad,
+// 3=Trinidad, 4=Cuatro Jinetes) y se suman todos los grupos — así, por ejemplo,
+// 3 cartas sueltas de alto poder dentro de una jugada de 4 valen 3 Presagios
+// (30) aunque las 4 cartas juntas no formen Cuatro Jinetes ni Convergencia
+// (Convergencia, de hecho, sale sola: son dos grupos de 2 = 20+20 = 40).
+// Nunca conviene partir un grupo del mismo poder en piezas más chicas (un
+// Cuatro Jinetes de 400 siempre gana a 2 Dualidades de 40, etc.), así que esta
+// suma por grupos ya es el máximo posible — sin necesidad de una búsqueda
+// exhaustiva por subconjuntos, lo cual la hace muchísimo más rápida y evita
+// que la simulación de 20 partidas se congele.
+// Con exactamente 5 cartas, además se compara contra los patrones especiales
+// que sólo existen usando las 5 juntas (escala, palo, full trío+par), que sí
+// pueden superar a la simple suma por grupos.
+function evaluateSelection(cards){
+  const n = cards.length;
+  if(n === 0) return {name:'Sin cartas', damage:0};
+
+  const groups = new Map();
+  cards.forEach(c => {
+    if(!groups.has(c.rank)) groups.set(c.rank, []);
+    groups.get(c.rank).push(c);
+  });
+
+  const parts = [];
+  let baseSum = 0;
+  groups.forEach(group => {
+    const count = group.length;
+    let name = null, damage = 0;
+    if(count === 4){ name = 'Cuatro Jinetes'; damage = 400; }
+    else if(count === 3){ name = 'Trinidad del Abismo'; damage = 80; }
+    else if(count === 2){ name = 'Dualidad'; damage = 20; }
+    else if(group[0].rank >= HIGH_POWER_MIN){ name = 'Presagio'; damage = 10; }
+    if(damage > 0){ parts.push({name, damage}); baseSum += damage; }
+  });
+
+  if(n === 5){
+    const structural = fiveCardStructuralPattern(cards);
+    if(structural && structural.damage > baseSum){
+      return {name:structural.name, damage:structural.damage};
+    }
+  }
+
+  if(parts.length === 0) return {name:'Sin combinaci&oacute;n', damage:0};
+  if(parts.length === 1) return {name:parts[0].name, damage:parts[0].damage};
+  // Caso clásico: la selección son EXACTAMENTE dos pares (dos Dualidades) y
+  // nada más -> se muestra con su nombre propio de la lista de reglas.
+  if(n === 4 && parts.length === 2 && parts.every(p => p.damage === 20)){
+    return {name:'Convergencia', damage:baseSum};
+  }
+  const comboNames = parts.map(p => p.name+' ('+p.damage+')').join(' + ');
+  return {name:comboNames, damage:baseSum};
+}
+
+// Busca, dentro de TODA la mano, el subconjunto de 1 a 5 cartas que produce el
+// mayor daño posible. Se usa para que los algoritmos (Minimax / Poda Alfa-Beta)
+// también "elijan libremente" cuántas y cuáles cartas usar para atacar, en vez
+// de estar obligados a usar siempre 5.
+function bestComboIndices(hand){
+  const n = hand.length;
+  if(n === 0) return {name:'Sin cartas', damage:0, indices:[]};
+  const maxK = Math.min(5, n);
+  let best = null;
+  for(let k=1;k<=maxK;k++){
+    const idxCombos = kCombinations(hand.map((_,i)=>i), k);
+    for(const combo of idxCombos){
+      const cards = combo.map(i=>hand[i]);
+      const res = evaluateSelection(cards);
+      if(!best || res.damage > best.damage){
+        best = {name:res.name, damage:res.damage, indices:combo};
+      }
+    }
+  }
+  return best;
+}
+
+function bestCombo(hand){
+  const b = bestComboIndices(hand);
+  return {name:b.name, damage:b.damage};
+}
+
+function bestComboWithCards(hand){
+  const b = bestComboIndices(hand);
+  const cards = b.indices.map(i=>hand[i]);
+  return {name:b.name, damage:b.damage, cards};
+}
+
+// A diferencia de bestComboWithCards (que BUSCA el mejor subconjunto posible),
+// esta función evalúa EXACTAMENTE las cartas que el jugador seleccionó con el
+// mouse (de 1 a 5), sin sustituirlas ni completarlas con otras cartas.
+function evaluateExactSelection(hand, selectedIndexSet){
+  const indices = [...selectedIndexSet];
+  if(indices.length < 1 || indices.length > 5) return null;
+  const cards = indices.map(i => hand[i]);
+  const res = evaluateSelection(cards);
+  return {name:res.name, damage:res.damage, cards};
+}
+
+function formatCardList(cards){
+  if(!cards || cards.length === 0) return '(sin cartas)';
+  return cards.map(c => RANK_LABEL[c.rank]+' de '+c.suit).join(', ');
+}
+
+function applyDiscardPure(hand, discardIndices, deck){
+  const discardSet = new Set(discardIndices);
+  const kept = hand.filter((_,i)=>!discardSet.has(i));
+  const numDraw = Math.min(discardIndices.length, deck.length);
+  const drawn = deck.slice(0, numDraw);
+  const restDeck = deck.slice(numDraw);
+  const newHand = kept.concat(drawn);
+  return {newHand, newDeck: restDeck};
+}
+
+function applyDiscardReal(gameState, hand, discardIndices){
+  ensureDeck(gameState.deck, discardIndices.length);
+  const {newHand, newDeck} = applyDiscardPure(hand, discardIndices, gameState.deck);
+  gameState.deck = newDeck;
+  return newHand;
+}
+
+// -------------------- Estado global del juego (modo visual) --------------------
+const state = {
+  screen: 'start',          // 'start' | 'battle' | 'end'
+  deck: [],
+  hp1: MAX_HP, hp2: MAX_HP,
+  hand1: [], hand2: [],
+  round: 0,
+  discardsUsed1: 0, discardsUsed2: 0,
+  selected1: new Set(), selected2: new Set(),
+  currentTurn: 1,            // 1 | 2 : de quién es el turno de decidir/descartar
+  totalDamageBy1: 0,
+  totalDamageBy2: 0,
+  gameOver: null,            // {winner:'p1'|'p2'|'tie'}
+  floatingTexts: [],
+  autoPlaying: false,
+  roundBusy: false,
+  paused: false,
+  cumNodesRound1: 0, cumTimeRound1: 0,
+  cumNodesRound2: 0, cumTimeRound2: 0,
+  manualCombo1: null, manualCombo2: null, // combinación EXACTA elegida por un jugador manual (no se recalcula sola)
+  roundLog: []
+};
+
+function modeOf(playerNum){
+  return document.getElementById('modeSelect'+playerNum).value;
+}
+function bothAlgorithms(){
+  return modeOf(1) !== 'manual' && modeOf(2) !== 'manual';
+}
+
+function dealNewRound(){
+  ensureDeck(state.deck, 16);
+  state.hand1 = state.deck.splice(0,8);
+  state.hand2 = state.deck.splice(0,8);
+  state.round += 1;
+  state.discardsUsed1 = 0; state.discardsUsed2 = 0;
+  state.selected1.clear(); state.selected2.clear();
+  state.manualCombo1 = null; state.manualCombo2 = null;
+  state.cumNodesRound1 = 0; state.cumTimeRound1 = 0;
+  state.cumNodesRound2 = 0; state.cumTimeRound2 = 0;
+  state.roundLog = [];
+}
+
+function addFloatingText(text, x, y, color, small){
+  state.floatingTexts.push({text, x, y, color, life: small ? 1.8 : 1.4, small: !!small});
+}
+
+function resolveRoundDamage(combo1, combo2){
+  state.hp2 = Math.max(0, state.hp2 - combo1.damage);
+  state.hp1 = Math.max(0, state.hp1 - combo2.damage);
+  state.totalDamageBy1 += combo1.damage;
+  state.totalDamageBy2 += combo2.damage;
+  addFloatingText('-'+combo1.damage+' ('+combo1.name+')', 460, 150, '#ff4d5e');
+  addFloatingText('-'+combo2.damage+' ('+combo2.name+')', 120, 150, '#b06bff');
+  addFloatingText(formatCardList(combo1.cards), 460, 172, '#e6b3bd', true);
+  addFloatingText(formatCardList(combo2.cards), 120, 172, '#d0b3ff', true);
+  sndAttack(combo1.damage);
+  setTimeout(()=>sndAttack(combo2.damage), 180);
+  checkGameOver();
+}
+
+function checkGameOver(){
+  if(state.hp1 <= 0 || state.hp2 <= 0 || state.round >= ROUND_CAP){
+    let winner;
+    if(state.hp1 <= 0 && state.hp2 <= 0) winner = 'tie';
+    else if(state.hp1 <= 0) winner = 'p2';
+    else if(state.hp2 <= 0) winner = 'p1';
+    else if(state.hp1 === state.hp2) winner = 'tie';
+    else winner = state.hp1 > state.hp2 ? 'p1' : 'p2';
+    endGame(winner);
+  }
+}
+
+function endGame(winner){
+  state.gameOver = {winner};
+  state.screen = 'end';
+  state.autoPlaying = false;
+  document.getElementById('btnAuto').textContent = 'Auto: OFF';
+  document.getElementById('btnStep').disabled = true;
+  document.getElementById('btnAttack1').disabled = true;
+  document.getElementById('btnDiscard1').disabled = true;
+  document.getElementById('btnAttack2').disabled = true;
+  document.getElementById('btnDiscard2').disabled = true;
+  document.getElementById('modeSelect1').disabled = false;
+  document.getElementById('modeSelect2').disabled = false;
+  document.getElementById('statTie').textContent = winner==='tie' ? 'SÍ' : 'NO';
+  document.getElementById('statWinner').textContent =
+    winner==='tie' ? 'Nadie (empate)' : (winner==='p1' ? 'JUGADOR 1' : 'JUGADOR 2');
+  document.getElementById('statRounds').textContent = state.round;
+  if(winner==='p1') sndWin();
+  else if(winner==='p2') sndLose();
+  else sndTie();
+}
+
+/* ======================================================================
+   ===============  LOGICA DEL AGENTE: MINIMAX / ALFA-BETA  ============
+   ======================================================================
+   Modela la fase de descarte de UN jugador como un juego adversarial
+   de dos niveles frente a la mano ACTUAL del otro jugador:
+     - MAX-VALOR: el jugador que decide elige qué cartas descartar
+       para MAXIMIZAR su ventaja neta esperada (daño propio estimado
+       menos daño estimado del rival).
+     - MIN-VALOR: el rival simulado responde intentando MINIMIZAR esa
+       misma ventaja neta.
+   Esta misma función se usa sin distinción para J1 o J2: quien esté
+   decidiendo juega el papel de MAX y la mano contraria (tal como está
+   en ese instante) juega el papel de MIN.
+*/
+
+function generateCandidates(hand){
+  const best = bestComboIndices(hand);
+  const keep = new Set(best.indices);
+  const nonKeep = hand.map((_,i)=>i).filter(i=>!keep.has(i));
+
+  const candidates = [[]]; // no descartar nada
+  if(nonKeep.length) candidates.push(nonKeep.slice());
+  nonKeep.forEach(i => candidates.push([i]));
+
+  const byRankAsc = hand.map((c,i)=>({i, rank:c.rank})).sort((a,b)=>a.rank-b.rank);
+  for(let n=1;n<=3;n++){
+    candidates.push(byRankAsc.slice(0,n).map(o=>o.i));
+  }
+
+  const suitCount = {};
+  hand.forEach(c => suitCount[c.suit] = (suitCount[c.suit]||0)+1);
+  const majSuit = Object.entries(suitCount).sort((a,b)=>b[1]-a[1])[0][0];
+  const offSuit = hand.map((c,i)=>({c,i})).filter(o=>o.c.suit!==majSuit).map(o=>o.i).slice(0,5);
+  if(offSuit.length) candidates.push(offSuit);
+
+  const seen = new Set();
+  const unique = [];
+  for(const cand of candidates){
+    if(cand.length > 5) continue;
+    const key = [...cand].sort((a,b)=>a-b).join(',');
+    if(!seen.has(key)){ seen.add(key); unique.push(cand); }
+  }
+  return unique;
+}
+
+function maxValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats){
+  stats.nodes += 1;
+  const candidates = generateCandidates(playerHand);
+  let bestVal = -Infinity;
+  let bestAction = candidates[0] || [];
+  for(const action of candidates){
+    const {newHand, newDeck} = applyDiscardPure(playerHand, action, deck);
+    const val = minValue(newHand, oppHand, newDeck, alpha, beta, useAlphaBeta, stats);
+    if(val > bestVal){ bestVal = val; bestAction = action; }
+    if(useAlphaBeta){
+      if(bestVal >= beta) return {value:bestVal, action:bestAction}; // poda beta
+      alpha = Math.max(alpha, bestVal);
+    }
+  }
+  return {value:bestVal, action:bestAction};
+}
+
+function minValue(playerHand, oppHand, deck, alpha, beta, useAlphaBeta, stats){
+  stats.nodes += 1;
+  const candidates = generateCandidates(oppHand);
+  let worst = Infinity;
+  const playerVal = bestCombo(playerHand).damage;
+  for(const action of candidates){
+    const {newHand:newOppHand} = applyDiscardPure(oppHand, action, deck);
+    stats.nodes += 1; // nodo hoja
+    const leafVal = playerVal - bestCombo(newOppHand).damage;
+    if(leafVal < worst) worst = leafVal;
+    if(useAlphaBeta){
+      if(worst <= alpha) return worst; // poda alfa
+      beta = Math.min(beta, worst);
+    }
+  }
+  return worst;
+}
+
+// useAlphaBeta=false -> Minimax puro (explora todo el árbol).
+// useAlphaBeta=true  -> Poda Alfa-Beta (misma decisión final, menos nodos).
+function searchDecision(playerHand, oppHand, deck, useAlphaBeta){
+  const stats = {nodes:0};
+  const t0 = performance.now();
+  const result = maxValue(playerHand, oppHand, deck, -Infinity, Infinity, useAlphaBeta, stats);
+  const t1 = performance.now();
+  return {action: result.action, value: result.value, nodes: stats.nodes, timeMs: (t1-t0)};
+}
+
+/* ======================================================================
+   ================  LOGICA DEL AGENTE: BFS / DFS / A*  ================
+   ======================================================================
+   A diferencia de Minimax/Alfa-Beta (que modelan al rival como un
+   adversario que también juega óptimo, buscando el mejor resultado en
+   el PEOR caso), estos tres algoritmos son búsqueda NO adversarial:
+   exploran únicamente el árbol de las propias jugadas de descarte
+   posibles —generado por la MISMA función generateCandidates() que ya
+   usan Minimax y Alfa-Beta— y buscan la que maximiza el daño propio
+   resultante, sin simular ninguna respuesta del oponente. "value" aquí
+   representa directamente el daño propio estimado (no una ventaja neta).
+*/
+
+// Heurística barata (no exhaustiva) para A*: agrupa la mano por poder y
+// estima el daño a partir del grupo más grande, con un margen extra para
+// cubrir combinaciones estructurales de 5 cartas. Sirve para ORDENAR los
+// candidatos de más a menos prometedor sin tener que evaluarlos todos con
+// la función exacta (bestCombo), que es mucho más cara.
+function heuristicaRapidaMano(hand){
+  const counts = {};
+  hand.forEach(c => counts[c.rank] = (counts[c.rank]||0)+1);
+  let maxGroup = 0, altosSueltos = 0, grupoAlto = false;
+  for(const r in counts){
+    const rank = +r, n = counts[r];
+    if(n > maxGroup){ maxGroup = n; grupoAlto = rank >= HIGH_POWER_MIN; }
+    if(rank >= HIGH_POWER_MIN) altosSueltos += 1;
+  }
+  const tablaGrupo = {4:400, 3:80, 2:20, 1: grupoAlto?10:0};
+  return (tablaGrupo[maxGroup]||0) + altosSueltos*10 + 50; // +50: margen para escaleras/palos/full
+}
+
+// BFS: puntúa TODOS los candidatos (uno por uno, en el orden en que los
+// genera generateCandidates) y se queda con el de mayor daño. Exhaustivo:
+// nunca se le escapa el mejor descarte disponible entre los candidatos.
+function decisionBFS(hand, deck){
+  const t0 = performance.now();
+  const candidatos = generateCandidates(hand);
+  let nodes = 0, mejorAccion = candidatos[0] || [], mejorVal = -Infinity;
+  for(const accion of candidatos){
+    nodes += 1;
+    const {newHand} = applyDiscardPure(hand, accion, deck);
+    const val = bestCombo(newHand).damage;
+    if(val > mejorVal){ mejorVal = val; mejorAccion = accion; }
+  }
+  const t1 = performance.now();
+  return {action:mejorAccion, value:mejorVal, nodes, timeMs:(t1-t0), label:'daño propio estimado (BFS)'};
+}
+
+// DFS: recorre los candidatos en orden y se COMPROMETE con el primero que
+// mejora la mano actual, deteniéndose ahí sin revisar el resto (no vuelve
+// atrás a comparar con otras ramas). El más rápido de los tres, pero —igual
+// que en cualquier árbol de búsqueda— no garantiza el mejor resultado.
+function decisionDFS(hand, deck){
+  const t0 = performance.now();
+  const candidatos = generateCandidates(hand);
+  const base = bestCombo(hand).damage;
+  let nodes = 0, accion = [], val = base;
+  for(const cand of candidatos){
+    nodes += 1;
+    const {newHand} = applyDiscardPure(hand, cand, deck);
+    const v = bestCombo(newHand).damage;
+    if(v > val){ accion = cand; val = v; break; }
+  }
+  const t1 = performance.now();
+  return {action:accion, value:val, nodes, timeMs:(t1-t0), label:'daño propio estimado (DFS)'};
+}
+
+// A*: ordena los candidatos por la heurística barata (más prometedores
+// primero) y los evalúa en ese orden con la función exacta (bestCombo).
+// Se detiene en cuanto ningún candidato restante puede —según su cota
+// heurística— superar lo ya encontrado. Suele llegar al mismo resultado
+// que BFS visitando muchos menos nodos, gracias al orden informado.
+function decisionAStar(hand, deck){
+  const t0 = performance.now();
+  const candidatos = generateCandidates(hand);
+  const conHeuristica = candidatos.map(accion=>{
+    const {newHand} = applyDiscardPure(hand, accion, deck);
+    return {accion, newHand, h:heuristicaRapidaMano(newHand)};
+  }).sort((a,b)=>b.h-a.h);
+  let nodes = 0, mejorAccion = candidatos[0] || [], mejorVal = -Infinity;
+  for(let i=0;i<conHeuristica.length;i++){
+    nodes += 1;
+    const cand = conHeuristica[i];
+    const val = bestCombo(cand.newHand).damage;
+    if(val > mejorVal){ mejorVal = val; mejorAccion = cand.accion; }
+    const siguiente = conHeuristica[i+1];
+    if(!siguiente || siguiente.h <= mejorVal) break; // corte informado
+  }
+  const t1 = performance.now();
+  return {action:mejorAccion, value:mejorVal, nodes, timeMs:(t1-t0), label:'daño propio estimado (A*)'};
+}
+
+// Punto único de despacho: decide qué función usar según el modo del
+// jugador. Minimax y Alfa-Beta siguen pasando exactamente por la misma
+// searchDecision() de siempre, sin ningún cambio en su lógica.
+function decideDiscard(hand, oppHand, deck, mode){
+  if(mode === 'bfs') return decisionBFS(hand, deck);
+  if(mode === 'dfs') return decisionDFS(hand, deck);
+  if(mode === 'astar') return decisionAStar(hand, deck);
+  return searchDecision(hand, oppHand, deck, mode === 'alphabeta');
+}
+
+/* ======================================================================
+   ========================  FLUJO DE TURNOS (PvP)  ====================
+   ======================================================================
+   Cada ronda: J1 decide (Manual o algoritmo) sus hasta-3 descartes,
+   luego J2 hace lo mismo viendo ya la mano final de J1 (todo visible
+   en pantalla), y al terminar ambos turnos se resuelve el daño.
+   Si ambos jugadores usan un algoritmo, la ronda completa se resuelve
+   de inmediato al pulsar "Jugar Ronda" (o en modo Auto); si al menos
+   uno es Manual, el flujo avanza solo mediante sus propios botones.
+*/
+
+function algoLabel(mode){
+  if(mode === 'alphabeta') return 'Poda Alfa-Beta';
+  if(mode === 'minimax') return 'Minimax';
+  if(mode === 'bfs') return 'BFS';
+  if(mode === 'dfs') return 'DFS';
+  if(mode === 'astar') return 'A*';
+  return 'Minimax';
+}
+
+function runAutoDecisionForPlayer(playerNum){
+  const mode = modeOf(playerNum);
+  let hand = playerNum===1 ? state.hand1 : state.hand2;
+  const oppHand = playerNum===1 ? state.hand2 : state.hand1;
+  let totalNodes = 0, totalTime = 0;
+  const log = [];
+
+  for(let d=0; d<3; d++){
+    const decision = decideDiscard(hand, oppHand, state.deck, mode);
+    totalNodes += decision.nodes;
+    totalTime += decision.timeMs;
+    hand = applyDiscardReal(state, hand, decision.action);
+    log.push(
+      'Descarte '+(d+1)+'/3: '+(decision.action.length? (decision.action.length+' carta(s)') : 'ninguna')+
+      ' | '+(decision.label||'ventaja estimada')+' = '+decision.value.toFixed(0)+
+      ' | nodos = '+decision.nodes+' | tiempo = '+decision.timeMs.toFixed(2)+' ms'
+    );
+    document.getElementById('statNodesLast'+playerNum).textContent = decision.nodes;
+    document.getElementById('statTimeLast'+playerNum).textContent = decision.timeMs.toFixed(2)+' ms';
+  }
+
+  if(playerNum===1) state.hand1 = hand; else state.hand2 = hand;
+
+  if(playerNum===1){ state.cumNodesRound1 += totalNodes; state.cumTimeRound1 += totalTime; }
+  else { state.cumNodesRound2 += totalNodes; state.cumTimeRound2 += totalTime; }
+  document.getElementById('statNodesRound'+playerNum).textContent = playerNum===1?state.cumNodesRound1:state.cumNodesRound2;
+  document.getElementById('statTimeRound'+playerNum).textContent = (playerNum===1?state.cumTimeRound1:state.cumTimeRound2).toFixed(2)+' ms';
+
+  state.roundLog.push({player:playerNum, mode, log});
+}
+
+function beginTurn(playerNum){
+  state.currentTurn = playerNum;
+  updateHandsUI();
+  const mode = modeOf(playerNum);
+  if(mode !== 'manual'){
+    runAutoDecisionForPlayer(playerNum);
+    finishTurn(playerNum);
+  }
+  // si es manual, no hacemos nada más: se espera la interacción del usuario
+}
+
+function finishTurn(playerNum){
+  if(playerNum === 1){
+    beginTurn(2);
+  } else {
+    resolveRound();
+  }
+}
+
+function resolveRound(){
+  const combo1 = (modeOf(1)==='manual' && state.manualCombo1) ? state.manualCombo1 : bestComboWithCards(state.hand1);
+  const combo2 = (modeOf(2)==='manual' && state.manualCombo2) ? state.manualCombo2 : bestComboWithCards(state.hand2);
+
+  let text = 'Ronda '+state.round+'\n\n';
+  state.roundLog.forEach(entry=>{
+    const who = entry.player===1 ? 'JUGADOR 1' : 'JUGADOR 2';
+    if(entry.mode === 'manual'){
+      text += who+' (Manual):\n'+entry.log.join('\n')+'\n\n';
+    } else {
+      text += who+' ('+algoLabel(entry.mode)+'):\n'+entry.log.join('\n')+'\n\n';
+    }
+  });
+  text += 'JUGADOR 1 juega: '+combo1.name+' ('+combo1.damage+' de daño)\n'+
+          'Cartas base usadas: '+formatCardList(combo1.cards)+'\n\n'+
+          'JUGADOR 2 juega: '+combo2.name+' ('+combo2.damage+' de daño)\n'+
+          'Cartas base usadas: '+formatCardList(combo2.cards);
+  document.getElementById('decisionText').textContent = text;
+
+  resolveRoundDamage(combo1, combo2);
+
+  if(!state.gameOver){
+    dealNewRound();
+    if(!bothAlgorithms()){
+      beginTurn(1);
+    } else {
+      state.currentTurn = 1;
+      updateHandsUI();
+      document.getElementById('turnIndicator').textContent =
+        'Ronda '+state.round+' lista. Pulsa "Jugar Ronda" o activa "Auto".';
+    }
+  }
+  state.roundBusy = false;
+}
+
+/* ======================================================================
+   ==================  MODO MANUAL (JUGADOR HUMANO)  ===================
+   ====================================================================== */
+
+function manualDiscardSelected(playerNum){
+  if(state.screen !== 'battle' || state.paused) return;
+  if(state.currentTurn !== playerNum) return;
+  if(modeOf(playerNum) !== 'manual') return;
+  const discardsUsed = playerNum===1 ? state.discardsUsed1 : state.discardsUsed2;
+  if(discardsUsed >= 3) return;
+  const selected = playerNum===1 ? state.selected1 : state.selected2;
+  const hand = playerNum===1 ? state.hand1 : state.hand2;
+  const indices = [...selected].filter(i=>i < hand.length).slice(0,5);
+  if(indices.length === 0) return;
+  const newHand = applyDiscardReal(state, hand, indices);
+  if(playerNum===1){ state.hand1 = newHand; state.discardsUsed1 += 1; state.selected1.clear(); }
+  else { state.hand2 = newHand; state.discardsUsed2 += 1; state.selected2.clear(); }
+  sndDiscard();
+  document.getElementById('decisionText').textContent =
+    'JUGADOR '+playerNum+' (Manual): descartó '+indices.length+' carta(s) en el intento '+
+    (playerNum===1?state.discardsUsed1:state.discardsUsed2)+'/3.';
+  updateHandsUI();
+}
+
+function manualAttack(playerNum){
+  if(state.screen !== 'battle' || state.paused) return;
+  if(state.currentTurn !== playerNum) return;
+  if(modeOf(playerNum) !== 'manual') return;
+  const selected = playerNum===1 ? state.selected1 : state.selected2;
+  const hand = playerNum===1 ? state.hand1 : state.hand2;
+  const combo = evaluateExactSelection(hand, selected);
+  if(!combo){
+    document.getElementById('decisionText').textContent =
+      'Debes seleccionar entre 1 y 5 cartas de tu mano para atacar (llevas '+selected.size+' seleccionadas).';
+    return;
+  }
+  if(playerNum===1) state.manualCombo1 = combo; else state.manualCombo2 = combo;
+  state.roundLog.push({player:playerNum, mode:'manual', log:[
+    'Turno terminado por el jugador (descartes usados: '+
+    (playerNum===1?state.discardsUsed1:state.discardsUsed2)+'/3).',
+    'Cartas elegidas para atacar: '+formatCardList(combo.cards)+' -> '+combo.name+' ('+combo.damage+' de daño).'
+  ]});
+  selected.clear();
+  sndClick();
+  finishTurn(playerNum);
+  updateHandsUI();
+}
+
+/* ======================================================================
+   =====================  SIMULACION EN LOTE (20)  =====================
+   ====================================================================== */
+
+// Cede el control al navegador (permite repintar la UI y no disparar el
+// aviso de "página no responde") sin frenar el cómputo de forma perceptible.
+function yieldToBrowser(){
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+async function simulateGame(mode1, mode2){
+  const g = {deck: shuffle(createFullDeck())};
+  let hp1 = MAX_HP, hp2 = MAX_HP, round = 0;
+  let totalNodes1 = 0, totalTime1 = 0, totalNodes2 = 0, totalTime2 = 0;
+
+  while(round < ROUND_CAP){
+    // Con partidas muy largas (peor caso: hasta ROUND_CAP=260 rondas), se
+    // cede el control cada pocas rondas para que la p&aacute;gina nunca deje
+    // de responder, sin afectar el resultado de la simulaci&oacute;n.
+    if(round % 5 === 0) await yieldToBrowser();
+    ensureDeck(g.deck, 16);
+    let hand1 = g.deck.splice(0,8);
+    let hand2 = g.deck.splice(0,8);
+    round += 1;
+
+    for(let d=0; d<3; d++){
+      const decision = decideDiscard(hand1, hand2, g.deck, mode1);
+      totalNodes1 += decision.nodes; totalTime1 += decision.timeMs;
+      hand1 = applyDiscardReal(g, hand1, decision.action);
+    }
+    for(let d=0; d<3; d++){
+      const decision = decideDiscard(hand2, hand1, g.deck, mode2);
+      totalNodes2 += decision.nodes; totalTime2 += decision.timeMs;
+      hand2 = applyDiscardReal(g, hand2, decision.action);
+    }
+
+    const combo1 = bestCombo(hand1);
+    const combo2 = bestCombo(hand2);
+    hp2 = Math.max(0, hp2 - combo1.damage);
+    hp1 = Math.max(0, hp1 - combo2.damage);
+
+    if(hp1 <= 0 || hp2 <= 0) break;
+  }
+
+  let winner;
+  if(hp1 <= 0 && hp2 <= 0) winner = 'tie';
+  else if(hp1 <= 0) winner = 'p2';
+  else if(hp2 <= 0) winner = 'p1';
+  else if(hp1 === hp2) winner = 'tie';
+  else winner = hp1 > hp2 ? 'p1' : 'p2';
+
+  return {winner, rounds: round, totalNodes1, totalTime1, totalNodes2, totalTime2};
+}
+
+async function runBatch(){
+  const btn = document.getElementById('btnBatch');
+  const resultsBox = document.getElementById('batchResults');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+
+  let mode1 = modeOf(1);
+  let mode2 = modeOf(2);
+  let note = '';
+  const notes = [];
+  if(mode1 === 'manual'){ mode1 = 'alphabeta'; notes.push('J1 estaba en Manual: se usó Poda Alfa-Beta para simularlo.'); }
+  if(mode2 === 'manual'){ mode2 = 'alphabeta'; notes.push('J2 estaba en Manual: se usó Poda Alfa-Beta para simularlo.'); }
+  note = notes.join(' ');
+
+  const results = [];
+  for(let i=1;i<=20;i++){
+    btn.textContent = 'Simulando... ('+i+'/20)';
+    resultsBox.innerHTML = '<div class="panel"><h2>Simulando partidas&hellip;</h2>'+
+      '<div class="stat-row"><span class="k">Progreso</span><span class="v">'+(i-1)+' / 20</span></div></div>';
+    // Cede el control ANTES de cada partida para que el navegador pueda
+    // repintar el progreso (si no, todo el trabajo pesado bloquearía el
+    // hilo principal de un tir&oacute;n, tal como pasaba antes).
+    await yieldToBrowser();
+    results.push(await simulateGame(mode1, mode2));
+  }
+  btn.textContent = originalLabel;
+  btn.disabled = false;
+
+  let wins1=0, wins2=0, ties=0;
+  let sumNodes1=0, sumTime1=0, sumNodes2=0, sumTime2=0, sumRounds=0;
+  let rows = '';
+  results.forEach((r,i)=>{
+    if(r.winner==='p1') wins1++;
+    else if(r.winner==='p2') wins2++;
+    else ties++;
+    sumNodes1 += r.totalNodes1; sumTime1 += r.totalTime1;
+    sumNodes2 += r.totalNodes2; sumTime2 += r.totalTime2;
+    sumRounds += r.rounds;
+    const cls = r.winner==='p1' ? 'win1' : (r.winner==='p2' ? 'win2' : 'tie');
+    const winnerLabel = r.winner==='p1' ? 'Jugador 1' : (r.winner==='p2' ? 'Jugador 2' : 'Empate');
+    rows += '<tr class="'+cls+'"><td>'+i+'</td><td>'+winnerLabel+'</td><td>'+(r.winner==='tie'?'SÍ':'NO')+
+            '</td><td>'+r.rounds+'</td><td>'+r.totalNodes1+'</td><td>'+r.totalTime1.toFixed(2)+'</td>'+
+            '<td>'+r.totalNodes2+'</td><td>'+r.totalTime2.toFixed(2)+'</td></tr>';
+  });
+
+  const avgNodes1 = (sumNodes1/20).toFixed(1);
+  const avgTime1 = (sumTime1/20).toFixed(2);
+  const avgNodes2 = (sumNodes2/20).toFixed(1);
+  const avgTime2 = (sumTime2/20).toFixed(2);
+  const avgRounds = (sumRounds/20).toFixed(1);
+
+  const html =
+    '<div class="panel">'+
+    '<h2>RESULTADOS: 20 PARTIDAS (J1: '+algoLabel(mode1).toUpperCase()+
+    ' &nbsp;vs&nbsp; J2: '+algoLabel(mode2).toUpperCase()+')</h2>'+
+    (note ? '<div id="batchNote">'+note+'</div>' : '')+
+    '<table><thead><tr><th>#</th><th>Ganador</th><th>Empate</th><th>Rondas</th>'+
+    '<th>Nodos J1</th><th>Tiempo J1 (ms)</th><th>Nodos J2</th><th>Tiempo J2 (ms)</th></tr></thead><tbody>'+
+    rows+
+    '</tbody></table>'+
+    '<div class="stat-row"><span class="k">Victorias Jugador 1</span><span class="v">'+wins1+'</span></div>'+
+    '<div class="stat-row"><span class="k">Victorias Jugador 2</span><span class="v">'+wins2+'</span></div>'+
+    '<div class="stat-row"><span class="k">Empates</span><span class="v">'+ties+'</span></div>'+
+    '<div class="stat-row"><span class="k">Promedio nodos J1 / partida</span><span class="v">'+avgNodes1+'</span></div>'+
+    '<div class="stat-row"><span class="k">Promedio tiempo J1 / partida</span><span class="v">'+avgTime1+' ms</span></div>'+
+    '<div class="stat-row"><span class="k">Promedio nodos J2 / partida</span><span class="v">'+avgNodes2+'</span></div>'+
+    '<div class="stat-row"><span class="k">Promedio tiempo J2 / partida</span><span class="v">'+avgTime2+' ms</span></div>'+
+    '<div class="stat-row"><span class="k">Promedio de rondas por partida</span><span class="v">'+avgRounds+'</span></div>'+
+    '</div>';
+
+  document.getElementById('batchResults').innerHTML = html;
+}
+
+/* ======================================================================
+   =========  TORNEO DE LOS 3 ALGORITMOS DE BÚSQUEDA (BFS/DFS/A*)  ======
+   ======================================================================
+   Enfrenta a BFS, DFS y A* entre sí (todos contra todos, 20 partidas por
+   cada enfrentamiento = 60 partidas en total), reutilizando la MISMA
+   simulateGame() que ya usa "Ejecutar 20 partidas", y junta las mismas
+   estadísticas (victorias, nodos, tiempo, rondas) por algoritmo.
+*/
+async function runTorneoBusqueda(){
+  const btn = document.getElementById('btnTorneoBusqueda');
+  const resultsBox = document.getElementById('torneoBusquedaResults');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+
+  const algos = ['bfs','dfs','astar'];
+  const emparejamientos = [['bfs','dfs'], ['bfs','astar'], ['dfs','astar']];
+  const acumulado = {};
+  algos.forEach(a => acumulado[a] = {victorias:0, empates:0, derrotas:0, nodos:0, tiempo:0, partidas:0});
+  const filasPorEnfrentamiento = [];
+
+  for(const [a1, a2] of emparejamientos){
+    let w1=0, w2=0, ties=0, sumNodes1=0, sumTime1=0, sumNodes2=0, sumTime2=0, sumRounds=0;
+    for(let i=1;i<=20;i++){
+      btn.textContent = algoLabel(a1)+' vs '+algoLabel(a2)+': '+i+'/20';
+      resultsBox.innerHTML = '<div class="panel"><h2>Torneo de b&uacute;squeda en curso&hellip;</h2>'+
+        '<div class="stat-row"><span class="k">'+algoLabel(a1)+' vs '+algoLabel(a2)+'</span><span class="v">'+(i-1)+' / 20</span></div></div>';
+      await yieldToBrowser();
+      const r = await simulateGame(a1, a2);
+      if(r.winner==='p1') w1++; else if(r.winner==='p2') w2++; else ties++;
+      sumNodes1+=r.totalNodes1; sumTime1+=r.totalTime1; sumNodes2+=r.totalNodes2; sumTime2+=r.totalTime2; sumRounds+=r.rounds;
+
+      acumulado[a1].nodos += r.totalNodes1; acumulado[a1].tiempo += r.totalTime1; acumulado[a1].partidas++;
+      acumulado[a2].nodos += r.totalNodes2; acumulado[a2].tiempo += r.totalTime2; acumulado[a2].partidas++;
+      if(r.winner==='p1'){ acumulado[a1].victorias++; acumulado[a2].derrotas++; }
+      else if(r.winner==='p2'){ acumulado[a2].victorias++; acumulado[a1].derrotas++; }
+      else { acumulado[a1].empates++; acumulado[a2].empates++; }
+    }
+    filasPorEnfrentamiento.push({a1, a2, w1, w2, ties,
+      avgNodes1:(sumNodes1/20).toFixed(1), avgTime1:(sumTime1/20).toFixed(2),
+      avgNodes2:(sumNodes2/20).toFixed(1), avgTime2:(sumTime2/20).toFixed(2),
+      avgRounds:(sumRounds/20).toFixed(1)});
+  }
+
+  btn.textContent = originalLabel;
+  btn.disabled = false;
+
+  let filasEnfrentamientos = '';
+  filasPorEnfrentamiento.forEach(f=>{
+    const cls = f.w1>f.w2 ? 'win1' : (f.w2>f.w1 ? 'win2' : 'tie');
+    filasEnfrentamientos +=
+      '<tr class="'+cls+'"><td>'+algoLabel(f.a1)+' vs '+algoLabel(f.a2)+'</td>'+
+      '<td>'+f.w1+' — '+f.w2+' ('+f.ties+' empates)</td>'+
+      '<td>'+f.avgNodes1+' / '+f.avgNodes2+'</td>'+
+      '<td>'+f.avgTime1+' / '+f.avgTime2+' ms</td>'+
+      '<td>'+f.avgRounds+'</td></tr>';
+  });
+
+  let filasResumen = '';
+  algos.forEach(a=>{
+    const s = acumulado[a];
+    filasResumen +=
+      '<tr><td>'+algoLabel(a)+'</td><td>'+s.victorias+'</td><td>'+s.empates+'</td><td>'+s.derrotas+'</td>'+
+      '<td>'+(s.nodos/s.partidas).toFixed(1)+'</td><td>'+(s.tiempo/s.partidas).toFixed(2)+' ms</td></tr>';
+  });
+
+  const html =
+    '<div class="panel">'+
+    '<h2>TORNEO DE B&Uacute;SQUEDA: BFS vs DFS vs A* (20 partidas por enfrentamiento)</h2>'+
+    '<table><thead><tr><th>Enfrentamiento</th><th>Marcador (J1 — J2)</th><th>Nodos prom. (J1/J2)</th>'+
+    '<th>Tiempo prom. (J1/J2)</th><th>Rondas prom.</th></tr></thead><tbody>'+
+    filasEnfrentamientos+
+    '</tbody></table>'+
+    '<h2 style="margin-top:16px">RESUMEN POR ALGORITMO (sumado de sus 40 partidas: 20+20)</h2>'+
+    '<table><thead><tr><th>Algoritmo</th><th>Victorias</th><th>Empates</th><th>Derrotas</th>'+
+    '<th>Nodos prom./partida</th><th>Tiempo prom./partida</th></tr></thead><tbody>'+
+    filasResumen+
+    '</tbody></table>'+
+    '<div class="hint" style="margin-top:10px">Cada algoritmo juega 40 partidas en total (20 contra cada uno de los otros dos). '+
+    'Fíjate en cómo BFS y A* suelen ganarle a DFS con m&aacute;s frecuencia (exploran m&aacute;s a fondo antes de decidir), mientras que A* logra un rendimiento similar a BFS visitando bastantes menos nodos.</div>'+
+    '</div>';
+
+  resultsBox.innerHTML = html;
+}
+
+/* ======================================================================
+   ===========================  PAUSA  ==================================
+   ====================================================================== */
+
+function togglePause(){
+  if(state.screen !== 'battle') return;
+  state.paused = !state.paused;
+  const btn = document.getElementById('btnPause');
+  btn.textContent = state.paused ? 'Reanudar' : 'Pausa';
+  refreshControls();
+  if(state.paused){
+    muteAmbience();
+    sndClick();
+  } else {
+    unmuteAmbience();
+    sndClick();
+    if(state.autoPlaying) autoLoopStep();
+  }
+}
+
+/* ======================================================================
+   =========================  SONIDO (WebAudio)  =======================
+   ====================================================================== */
+
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+function beep(freq, dur, type, vol, delay){
+  type = type || 'square'; vol = vol===undefined?0.08:vol; delay = delay||0;
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime + delay;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t+dur+0.02);
+  }catch(e){ /* audio no disponible; se ignora silenciosamente */ }
+}
+function sndClick(){ beep(300,0.05,'square',0.05); }
+function sndDiscard(){ beep(150,0.08,'sawtooth',0.06); }
+function sndAttack(dmg){ const freq = 180 + Math.min(dmg,2000)*0.3; beep(freq,0.18,'square',0.09); }
+function sndWin(){ [440,554,659,880].forEach((f,i)=>beep(f,0.18,'square',0.08,i*0.15)); }
+function sndLose(){ [440,330,220,110].forEach((f,i)=>beep(f,0.22,'sawtooth',0.08,i*0.18)); }
+function sndTie(){ beep(220,0.3,'triangle',0.07,0); beep(220,0.3,'triangle',0.07,0.25); }
+
+// -------------------- Música de ambiente --------------------
+let ambience = null;
+
+function createNoiseBuffer(ctxRef, seconds){
+  const bufferSize = ctxRef.sampleRate * seconds;
+  const buffer = ctxRef.createBuffer(1, bufferSize, ctxRef.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++) data[i] = Math.random()*2 - 1;
+  return buffer;
+}
+
+function startAmbience(){
+  try{
+    ensureAudio();
+    if(ambience) return;
+
+    const master = audioCtx.createGain();
+    master.gain.value = 0.0001;
+    const muteGain = audioCtx.createGain();
+    muteGain.gain.value = 1;
+    master.connect(muteGain);
+    muteGain.connect(audioCtx.destination);
+    master.gain.exponentialRampToValueAtTime(0.05, audioCtx.currentTime + 2.5);
+
+    const osc1 = audioCtx.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = 55;
+    const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = 58.5;
+    const droneFilter = audioCtx.createBiquadFilter(); droneFilter.type = 'lowpass'; droneFilter.frequency.value = 320;
+    const droneGain = audioCtx.createGain(); droneGain.gain.value = 0.7;
+    osc1.connect(droneFilter); osc2.connect(droneFilter);
+    droneFilter.connect(droneGain); droneGain.connect(master);
+    osc1.start(); osc2.start();
+
+    const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.06;
+    const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.025;
+    lfo.connect(lfoGain); lfoGain.connect(master.gain);
+    lfo.start();
+
+    const noiseBuffer = createNoiseBuffer(audioCtx, 4);
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer; noiseSource.loop = true;
+    const noiseFilter = audioCtx.createBiquadFilter(); noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 450; noiseFilter.Q.value = 0.5;
+    const noiseGain = audioCtx.createGain(); noiseGain.gain.value = 0.35;
+    noiseSource.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(master);
+    noiseSource.start();
+
+    const bellInterval = setInterval(()=>{
+      if(!ambience || state.paused) return;
+      if(Math.random() < 0.45){
+        const freq = 180 + Math.random()*320;
+        beep(freq, 1.0 + Math.random()*1.2, 'sine', 0.018, 0);
+      }
+    }, 3500);
+
+    ambience = {master, muteGain, osc1, osc2, lfo, noiseSource, bellInterval};
+  }catch(e){ /* audio no disponible; se ignora silenciosamente */ }
+}
+
+function stopAmbience(){
+  if(!ambience) return;
+  try{
+    const m = ambience.master;
+    const now = audioCtx.currentTime;
+    m.gain.cancelScheduledValues(now);
+    m.gain.setValueAtTime(m.gain.value, now);
+    m.gain.exponentialRampToValueAtTime(0.0001, now + 1);
+    const toStop = ambience;
+    setTimeout(()=>{
+      try{ toStop.osc1.stop(); toStop.osc2.stop(); toStop.lfo.stop(); toStop.noiseSource.stop(); }catch(e){}
+      clearInterval(toStop.bellInterval);
+    }, 1100);
+  }catch(e){ /* ignorar */ }
+  ambience = null;
+}
+
+function muteAmbience(){
+  if(!ambience) return;
+  try{
+    const g = ambience.muteGain;
+    const now = audioCtx.currentTime;
+    g.gain.cancelScheduledValues(now);
+    g.gain.setValueAtTime(g.gain.value, now);
+    g.gain.linearRampToValueAtTime(0, now + 0.25);
+  }catch(e){ /* ignorar */ }
+}
+
+function unmuteAmbience(){
+  if(!ambience) return;
+  try{
+    const g = ambience.muteGain;
+    const now = audioCtx.currentTime;
+    g.gain.cancelScheduledValues(now);
+    g.gain.setValueAtTime(g.gain.value, now);
+    g.gain.linearRampToValueAtTime(1, now + 0.25);
+  }catch(e){ /* ignorar */ }
+}
+
+/* ======================================================================
+   ==========================  RENDER (CANVAS)  =========================
+   ====================================================================== */
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let lastTime = 0;
+
+function drawStart(t){
+  const g = ctx.createRadialGradient(320,240,20,320,240,400);
+  g.addColorStop(0,'#1a0a14'); g.addColorStop(1,'#000000');
+  ctx.fillStyle = g; ctx.fillRect(0,0,640,480);
+
+  const pulse = 0.7 + 0.3*Math.sin(t/400);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(139,0,24,'+pulse+')';
+  ctx.font = 'bold 38px Courier New';
+  ctx.shadowColor = '#8b0018'; ctx.shadowBlur = 20;
+  ctx.fillText('LA MANO DEL FIN', 320, 190);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#8a8a92';
+  ctx.font = '14px Courier New';
+  ctx.fillText('Duelo Jugador 1 vs Jugador 2 — mismo dispositivo', 320, 230);
+  ctx.fillText('2000 puntos de vida · 3 descartes por ronda', 320, 252);
+  ctx.fillText('Elige el modo de cada jugador y pulsa "Iniciar / Reiniciar"', 320, 290);
+
+  drawSuitGlyphs(t);
+}
+
+function drawSuitGlyphs(t){
+  const labels = ['ABISMO','RUINA','SANGRE','CENIZA'];
+  const colors = ['#b06bff','#e08a3d','#ff4d5e','#b8b8c0'];
+  ctx.font = '12px Courier New';
+  labels.forEach((l,i)=>{
+    const x = 120 + i*140;
+    const y = 380 + 6*Math.sin(t/500 + i);
+    ctx.fillStyle = colors[i];
+    ctx.beginPath();
+    ctx.arc(x, y-10, 10, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.fillText(l, x, y+18);
+  });
+}
+
+function drawBattle(t, dt){
+  const g = ctx.createLinearGradient(0,0,0,480);
+  g.addColorStop(0,'#120814'); g.addColorStop(1,'#020103');
+  ctx.fillStyle = g; ctx.fillRect(0,0,640,480);
+
+  ctx.strokeStyle = 'rgba(90,26,140,0.25)';
+  for(let i=0;i<6;i++){
+    ctx.beginPath();
+    ctx.moveTo(40+i*100, 480);
+    ctx.lineTo(60+i*100, 340 - (i%3)*20);
+    ctx.lineTo(80+i*100, 480);
+    ctx.stroke();
+  }
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#8a8a92';
+  ctx.font = '13px Courier New';
+  ctx.fillText('Ronda: '+state.round, 20, 24);
+  ctx.textAlign = 'right';
+  ctx.fillText('Daño J1: '+state.totalDamageBy1+'   Daño J2: '+state.totalDamageBy2, 620, 24);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = state.currentTurn===1 ? '#ff4d5e' : '#b06bff';
+  ctx.font = 'bold 12px Courier New';
+  ctx.fillText('TURNO: JUGADOR '+state.currentTurn, 320, 24);
+
+  drawHPBar(20, 44, 'JUGADOR 1', state.hp1, '#ff4d5e');
+  drawHPBar(340, 44, 'JUGADOR 2', state.hp2, '#b06bff');
+
+  const bob = Math.sin(t/300)*6;
+  drawTriangle(150, 260+bob, 40, '#ff4d5e', true);
+  drawTriangle(490, 260-bob, 40, '#b06bff', false);
+
+  ctx.textAlign = 'center';
+  state.floatingTexts.forEach(ft=>{
+    ft.life -= dt/1000;
+    ft.y -= dt*0.02;
+  });
+  state.floatingTexts = state.floatingTexts.filter(ft=>ft.life>0);
+  state.floatingTexts.forEach(ft=>{
+    ctx.globalAlpha = Math.max(0, Math.min(1, ft.life));
+    ctx.fillStyle = ft.color;
+    ctx.font = ft.small ? '10px Courier New' : 'bold 16px Courier New';
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.globalAlpha = 1;
+  });
+
+  if(state.paused){
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0,0,640,480);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#d8c9d0';
+    ctx.font = 'bold 36px Courier New';
+    ctx.shadowColor = '#5a1a8c'; ctx.shadowBlur = 16;
+    ctx.fillText('PAUSA', 320, 230);
+    ctx.shadowBlur = 0;
+    ctx.font = '13px Courier New';
+    ctx.fillStyle = '#8a8a92';
+    ctx.fillText('Pulsa "Pausa" o ESC para continuar', 320, 262);
+  }
+}
+
+function drawHPBar(x,y,label,hp,color){
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#8a8a92';
+  ctx.font = '11px Courier New';
+  ctx.fillText(label+'  '+Math.max(0,hp)+' / '+MAX_HP, x, y-4);
+  ctx.strokeStyle = '#333'; ctx.strokeRect(x, y, 280, 14);
+  const pct = Math.max(0,hp)/MAX_HP;
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, 280*pct, 14);
+}
+
+function drawTriangle(cx,cy,size,color,pointUp){
+  ctx.beginPath();
+  if(pointUp){
+    ctx.moveTo(cx, cy-size);
+    ctx.lineTo(cx-size, cy+size);
+    ctx.lineTo(cx+size, cy+size);
+  } else {
+    ctx.moveTo(cx, cy+size);
+    ctx.lineTo(cx-size, cy-size);
+    ctx.lineTo(cx+size, cy-size);
+  }
+  ctx.closePath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.shadowColor = color; ctx.shadowBlur = 14;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 1;
+}
+
+function drawEnd(t){
+  const g = ctx.createRadialGradient(320,240,10,320,240,420);
+  g.addColorStop(0,'#1a0a14'); g.addColorStop(1,'#000000');
+  ctx.fillStyle = g; ctx.fillRect(0,0,640,480);
+
+  const w = state.gameOver ? state.gameOver.winner : 'tie';
+  const label = w==='p1' ? 'GANA JUGADOR 1' : (w==='p2' ? 'GANA JUGADOR 2' : 'EMPATE');
+  const color = w==='p1' ? '#ff4d5e' : (w==='p2' ? '#b06bff' : '#8a8a92');
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = color;
+  ctx.font = 'bold 38px Courier New';
+  ctx.shadowColor = color; ctx.shadowBlur = 18;
+  ctx.fillText(label, 320, 200);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#d8c9d0';
+  ctx.font = '14px Courier New';
+  ctx.fillText('Rondas jugadas: '+state.round, 320, 250);
+  ctx.fillText('Daño total J1: '+state.totalDamageBy1, 320, 272);
+  ctx.fillText('Daño total J2: '+state.totalDamageBy2, 320, 294);
+  ctx.fillText('Vida final — J1: '+Math.max(0,state.hp1)+'   J2: '+Math.max(0,state.hp2), 320, 316);
+  ctx.fillStyle = '#8a8a92';
+  ctx.fillText('Pulsa "Iniciar / Reiniciar" para jugar de nuevo', 320, 360);
+}
+
+function loop(t){
+  const dt = t - lastTime; lastTime = t;
+  ctx.clearRect(0,0,640,480);
+  if(state.screen==='start') drawStart(t);
+  else if(state.screen==='battle') drawBattle(t, dt||16);
+  else if(state.screen==='end') drawEnd(t);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ======================================================================
+   ============================  UI / DOM  ==============================
+   ====================================================================== */
+
+function buildHandRow(playerNum){
+  const row = document.getElementById('handRow'+playerNum);
+  row.innerHTML = '';
+  const hand = playerNum===1 ? state.hand1 : state.hand2;
+  const selected = playerNum===1 ? state.selected1 : state.selected2;
+  const isMyTurn = state.currentTurn === playerNum;
+  const manual = modeOf(playerNum) === 'manual';
+  const clickable = manual && isMyTurn && state.screen==='battle' && !state.paused;
+
+  hand.forEach((c,i)=>{
+    const div = document.createElement('div');
+    div.className = 'card '+SUIT_CLASS[c.suit]+(clickable?'':' locked');
+    if(selected.has(i)) div.className += ' selected';
+    div.innerHTML = '<div class="rank">'+RANK_LABEL[c.rank]+'</div><div>'+c.suit+'</div>';
+    if(clickable){
+      div.addEventListener('click', ()=>{
+        if(selected.has(i)) selected.delete(i);
+        else if(selected.size < 5) selected.add(i);
+        sndClick();
+        updateHandsUI();
+      });
+    }
+    row.appendChild(div);
+  });
+}
+
+function updateHandsUI(){
+  buildHandRow(1);
+  buildHandRow(2);
+
+  document.getElementById('discardCounter1').textContent = 'Descartes usados: '+state.discardsUsed1+'/3';
+  document.getElementById('discardCounter2').textContent = 'Descartes usados: '+state.discardsUsed2+'/3';
+  document.getElementById('attackCounter1').textContent = 'Cartas seleccionadas para atacar: '+state.selected1.size+' (elige de 1 a 5)';
+  document.getElementById('attackCounter2').textContent = 'Cartas seleccionadas para atacar: '+state.selected2.size+' (elige de 1 a 5)';
+
+  const active = state.screen==='battle' && !state.paused;
+  const manual1 = modeOf(1) === 'manual';
+  const manual2 = modeOf(2) === 'manual';
+  const myTurn1 = state.currentTurn === 1;
+  const myTurn2 = state.currentTurn === 2;
+
+  document.getElementById('btnDiscard1').disabled = !(manual1 && active && myTurn1 && state.discardsUsed1<3);
+  document.getElementById('btnHint1').disabled    = !(manual1 && active && myTurn1 && state.discardsUsed1<3);
+  document.getElementById('btnAttack1').disabled  = !(manual1 && active && myTurn1 && state.selected1.size>=1 && state.selected1.size<=5);
+  document.getElementById('btnDiscard2').disabled = !(manual2 && active && myTurn2 && state.discardsUsed2<3);
+  document.getElementById('btnHint2').disabled    = !(manual2 && active && myTurn2 && state.discardsUsed2<3);
+  document.getElementById('btnAttack2').disabled  = !(manual2 && active && myTurn2 && state.selected2.size>=1 && state.selected2.size<=5);
+
+  const area1 = document.getElementById('handArea1');
+  const area2 = document.getElementById('handArea2');
+  area1.classList.toggle('active', active && myTurn1);
+  area1.classList.toggle('inactive', !(active && myTurn1));
+  area2.classList.toggle('active', active && myTurn2);
+  area2.classList.toggle('inactive', !(active && myTurn2));
+
+  const indicator = document.getElementById('turnIndicator');
+  if(state.screen === 'battle'){
+    if(state.paused){
+      indicator.textContent = 'Partida en pausa.';
+    } else {
+      const modeTxt = modeOf(state.currentTurn) === 'manual' ? 'Manual' : algoLabel(modeOf(state.currentTurn));
+      indicator.textContent = 'Ronda '+state.round+' — Turno de JUGADOR '+state.currentTurn+' ('+modeTxt+')';
+    }
+  }
+}
+
+function refreshControls(){
+  const inBattle = state.screen === 'battle';
+  const active = inBattle && !state.paused;
+  document.getElementById('btnStep').disabled = !(active && bothAlgorithms());
+  document.getElementById('btnAuto').disabled = !(active && bothAlgorithms());
+  document.getElementById('btnPause').disabled = !inBattle;
+  document.getElementById('modeSelect1').disabled = inBattle;
+  document.getElementById('modeSelect2').disabled = inBattle;
+  updateHandsUI();
+}
+
+document.getElementById('modeSelect1').addEventListener('change', refreshControls);
+document.getElementById('modeSelect2').addEventListener('change', refreshControls);
+
+document.getElementById('btnStart').addEventListener('click', ()=>{
+  ensureAudio();
+  startAmbience();
+  state.deck = shuffle(createFullDeck());
+  state.hp1 = MAX_HP; state.hp2 = MAX_HP;
+  state.round = 0;
+  state.totalDamageBy1 = 0; state.totalDamageBy2 = 0;
+  state.gameOver = null;
+  state.floatingTexts = [];
+  state.autoPlaying = false;
+  state.paused = false;
+  state.roundBusy = false;
+  document.getElementById('btnAuto').textContent = 'Auto: OFF';
+  document.getElementById('btnPause').textContent = 'Pausa';
+  document.getElementById('statTie').textContent = '-';
+  document.getElementById('statWinner').textContent = '-';
+  document.getElementById('statRounds').textContent = '-';
+  ['1','2'].forEach(n=>{
+    document.getElementById('statNodesLast'+n).textContent = '-';
+    document.getElementById('statTimeLast'+n).textContent = '-';
+    document.getElementById('statNodesRound'+n).textContent = '-';
+    document.getElementById('statTimeRound'+n).textContent = '-';
+  });
+
+  dealNewRound();
+  state.screen = 'battle';
+  refreshControls();
+
+  if(bothAlgorithms()){
+    state.currentTurn = 1;
+    updateHandsUI();
+    document.getElementById('turnIndicator').textContent =
+      'Ronda '+state.round+' lista. Pulsa "Jugar Ronda" o activa "Auto".';
+  } else {
+    beginTurn(1);
+  }
+  sndClick();
+});
+
+function giveHint(playerNum){
+  const hand = playerNum===1 ? state.hand1 : state.hand2;
+  const oppHand = playerNum===1 ? state.hand2 : state.hand1;
+  const decision = searchDecision(hand, oppHand, state.deck, true); // Usa Alfa-Beta
+  const selected = playerNum===1 ? state.selected1 : state.selected2;
+  selected.clear();
+  decision.action.forEach(i => selected.add(i));
+  updateHandsUI();
+  document.getElementById('decisionText').innerHTML = '&#128302; <b>El Demonio sugiere:</b> descartar estas ' + decision.action.length + ' carta(s) para maximizar tu ventaja.';
+}
+
+document.getElementById('btnHint1').addEventListener('click', ()=>giveHint(1));
+document.getElementById('btnHint2').addEventListener('click', ()=>giveHint(2));
+document.getElementById('btnDiscard1').addEventListener('click', ()=>manualDiscardSelected(1));
+document.getElementById('btnAttack1').addEventListener('click', ()=>manualAttack(1));
+document.getElementById('btnDiscard2').addEventListener('click', ()=>manualDiscardSelected(2));
+document.getElementById('btnAttack2').addEventListener('click', ()=>manualAttack(2));
+
+document.getElementById('btnStep').addEventListener('click', ()=>{
+  if(state.roundBusy || state.screen!=='battle' || state.paused || !bothAlgorithms()) return;
+  state.roundBusy = true;
+  beginTurn(1);
+});
+
+document.getElementById('btnAuto').addEventListener('click', function(){
+  state.autoPlaying = !state.autoPlaying;
+  this.textContent = 'Auto: ' + (state.autoPlaying ? 'ON' : 'OFF');
+  if(state.autoPlaying) autoLoopStep();
+});
+
+function autoLoopStep(){
+  if(!state.autoPlaying || state.screen!=='battle' || !bothAlgorithms()) return;
+  if(state.paused){
+    setTimeout(autoLoopStep, 260);
+    return;
+  }
+  if(!state.roundBusy){
+    state.roundBusy = true;
+    beginTurn(1);
+  }
+  if(state.autoPlaying && state.screen==='battle'){
+    setTimeout(autoLoopStep, 260);
+  }
+}
+
+document.getElementById('btnBatch').addEventListener('click', ()=>{
+  runBatch();
+});
+document.getElementById('btnTorneoBusqueda').addEventListener('click', ()=>{
+  runTorneoBusqueda();
+});
+
+document.getElementById('btnPause').addEventListener('click', togglePause);
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){
+    togglePause();
+    e.preventDefault();
+  }
+});
+
+refreshControls();
+
+const themes = ['', 'theme-hell', 'theme-classic'];
+let currentThemeIdx = 0;
+document.getElementById('themeToggleBtn').addEventListener('click', () => {
+  currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+  document.body.className = themes[currentThemeIdx];
+});
+</script>
+</body>
+</html>
